@@ -1,23 +1,43 @@
 import os
 import re
 import sys
-from PySide2.QtCore import QThread, Qt, Signal
-from PySide2.QtWidgets import (
-    QApplication,
-    QFileDialog,
-    QFormLayout,
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QMessageBox,
-    QProgressBar,
-    QPushButton,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from importlib import import_module
+
+
+try:
+    qt_core = import_module('PySide2.QtCore')
+    qt_widgets = import_module('PySide2.QtWidgets')
+except ImportError:
+    # PySide6 fallback keeps the local development environment usable.
+    qt_core = import_module('PySide6.QtCore')
+    qt_widgets = import_module('PySide6.QtWidgets')
+
+
+QThread = qt_core.QThread
+Qt = qt_core.Qt
+Signal = qt_core.Signal
+QApplication = qt_widgets.QApplication
+QFileDialog = qt_widgets.QFileDialog
+QFormLayout = qt_widgets.QFormLayout
+QFrame = qt_widgets.QFrame
+QHBoxLayout = qt_widgets.QHBoxLayout
+QLabel = qt_widgets.QLabel
+QLineEdit = qt_widgets.QLineEdit
+QMessageBox = qt_widgets.QMessageBox
+QProgressBar = qt_widgets.QProgressBar
+QPushButton = qt_widgets.QPushButton
+QSizePolicy = qt_widgets.QSizePolicy
+QVBoxLayout = qt_widgets.QVBoxLayout
+QWidget = qt_widgets.QWidget
 from yt_dlp import YoutubeDL
+
+ALIGN_LEFT = getattr(Qt, 'AlignLeft', Qt.AlignmentFlag.AlignLeft)
+SIZE_POLICY_EXPANDING = getattr(
+    QSizePolicy, 'Expanding', QSizePolicy.Policy.Expanding
+)
+SIZE_POLICY_PREFERRED = getattr(
+    QSizePolicy, 'Preferred', QSizePolicy.Policy.Preferred
+)
 
 
 def bundled_ffmpeg_dir():
@@ -188,7 +208,7 @@ class DownloaderApp(QWidget):
         form_layout = QFormLayout()
         form_layout.setVerticalSpacing(8)
         form_layout.setHorizontalSpacing(14)
-        form_layout.setLabelAlignment(Qt.AlignLeft)
+        form_layout.setLabelAlignment(ALIGN_LEFT)
 
         url_label = QLabel('Oynatma listesi bağlantısı')
         url_label.setObjectName('section')
@@ -232,7 +252,7 @@ class DownloaderApp(QWidget):
         self.status_indicator.setStyleSheet('color: #10b981; font-size: 18px;')
         self.status_label = QLabel('Hazır — bağlantıyı yapıştırıp başlayabilirsiniz.')
         self.status_label.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Preferred
+            SIZE_POLICY_EXPANDING, SIZE_POLICY_PREFERRED
         )
         status_header.addWidget(self.status_indicator)
         status_header.addWidget(self.status_label)
