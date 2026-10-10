@@ -41,6 +41,9 @@ jobs:
     - name: Build EXE with PyInstaller
       run: |
         pyinstaller --onefile --noconsole `
+          --collect-all PySide2 `
+          --hidden-import PySide2.QtCore `
+          --hidden-import PySide2.QtWidgets `
           --add-binary "build\ffmpeg\ffmpeg.exe;ffmpeg" `
           --add-binary "build\ffmpeg\ffprobe.exe;ffmpeg" `
           youtube_mp3_downloader.py
