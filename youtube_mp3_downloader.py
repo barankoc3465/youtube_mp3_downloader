@@ -164,7 +164,7 @@ class DownloaderApp(QWidget):
 
         header = QVBoxLayout()
         header.setSpacing(5)
-        title = QLabel("Playlist'ten MP3 indir")
+        title = QLabel("Oynatma listesinden MP3 indir")
         title.setObjectName('title')
         subtitle = QLabel('Favori müziklerinizi kolayca bilgisayarınıza kaydedin.')
         subtitle.setObjectName('subtitle')
@@ -183,7 +183,7 @@ class DownloaderApp(QWidget):
         form_layout.setHorizontalSpacing(14)
         form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        url_label = QLabel('Playlist bağlantısı')
+        url_label = QLabel('Oynatma listesi bağlantısı')
         url_label.setObjectName('section')
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText(
@@ -237,7 +237,7 @@ class DownloaderApp(QWidget):
         self.progress_bar.setVisible(False)
         status_layout.addWidget(self.progress_bar)
 
-        hint = QLabel('Dosyalar, seçtiğiniz klasörde playlist adına göre düzenlenir.')
+        hint = QLabel('Dosyalar, seçtiğiniz klasörde oynatma listesi adına göre düzenlenir.')
         hint.setObjectName('hint')
         status_layout.addWidget(hint)
         layout.addWidget(status_card)
