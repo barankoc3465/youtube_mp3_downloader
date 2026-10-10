@@ -1,9 +1,8 @@
 import os
 import re
 import sys
-import static_ffmpeg
-from PySide6.QtCore import QThread, Qt, Signal
-from PySide6.QtWidgets import (
+from PySide2.QtCore import QThread, Qt, Signal
+from PySide2.QtWidgets import (
     QApplication,
     QFileDialog,
     QFormLayout,
@@ -20,8 +19,12 @@ from PySide6.QtWidgets import (
 )
 from yt_dlp import YoutubeDL
 
-# Sanal ortam içerisine FFmpeg binary dosyalarını hazırlar
-static_ffmpeg.add_paths()
+
+def bundled_ffmpeg_dir():
+    """Return the FFmpeg directory bundled by the Windows build."""
+    if getattr(sys, 'frozen', False):
+        return os.path.join(sys._MEIPASS, 'ffmpeg')
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ffmpeg')
 
 
 class DownloadWorker(QThread):
@@ -47,6 +50,7 @@ class DownloadWorker(QThread):
             self.progress_signal.emit('MP3 formatına dönüştürülüyor...', 100)
 
     def run(self):
+        ffmpeg_dir = bundled_ffmpeg_dir()
         ydl_opts = {
             'format': 'bestaudio/best',
             'postprocessors': [{
@@ -54,6 +58,7 @@ class DownloadWorker(QThread):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
+
             # Oynatma listesi adıyla klasör açıp MP3'leri içine kaydeder
             'outtmpl': os.path.join(
                 self.save_path, '%(playlist_title)s/%(title)s.%(ext)s'
@@ -62,6 +67,8 @@ class DownloadWorker(QThread):
             'ignoreerrors': True,
             'quiet': True,
         }
+        if os.path.isdir(ffmpeg_dir):
+            ydl_opts['ffmpeg_location'] = ffmpeg_dir
 
         try:
             with YoutubeDL(ydl_opts) as ydl:
@@ -181,7 +188,7 @@ class DownloaderApp(QWidget):
         form_layout = QFormLayout()
         form_layout.setVerticalSpacing(8)
         form_layout.setHorizontalSpacing(14)
-        form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
+        form_layout.setLabelAlignment(Qt.AlignLeft)
 
         url_label = QLabel('Oynatma listesi bağlantısı')
         url_label.setObjectName('section')
@@ -225,7 +232,7 @@ class DownloaderApp(QWidget):
         self.status_indicator.setStyleSheet('color: #10b981; font-size: 18px;')
         self.status_label = QLabel('Hazır — bağlantıyı yapıştırıp başlayabilirsiniz.')
         self.status_label.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            QSizePolicy.Expanding, QSizePolicy.Preferred
         )
         status_header.addWidget(self.status_indicator)
         status_header.addWidget(self.status_label)

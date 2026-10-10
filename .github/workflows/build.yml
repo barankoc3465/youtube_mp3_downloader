@@ -16,17 +16,34 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.8.10'
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller
-        if (Test-Path requirements.txt) { pip install -r requirements.txt }
+        python -m pip install pip==24.3.1
+        pip install pyinstaller==5.13.2
+        pip install -r requirements.txt
+
+    - name: Download and bundle FFmpeg
+      shell: powershell
+      run: |
+        New-Item -ItemType Directory -Force -Path build\ffmpeg | Out-Null
+        Invoke-WebRequest `
+          -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" `
+          -OutFile build\ffmpeg.zip
+        Expand-Archive -Path build\ffmpeg.zip -DestinationPath build\ffmpeg-unpacked -Force
+        $ffmpeg = Get-ChildItem build\ffmpeg-unpacked -Filter ffmpeg.exe -Recurse | Select-Object -First 1
+        $ffprobe = Get-ChildItem build\ffmpeg-unpacked -Filter ffprobe.exe -Recurse | Select-Object -First 1
+        if (-not $ffmpeg -or -not $ffprobe) { throw "FFmpeg binaries could not be found." }
+        Copy-Item $ffmpeg.FullName build\ffmpeg\ffmpeg.exe
+        Copy-Item $ffprobe.FullName build\ffmpeg\ffprobe.exe
 
     - name: Build EXE with PyInstaller
       run: |
-        pyinstaller --onefile --noconsole youtube_mp3_downloader.py
+        pyinstaller --onefile --noconsole `
+          --add-binary "build\ffmpeg\ffmpeg.exe;ffmpeg" `
+          --add-binary "build\ffmpeg\ffprobe.exe;ffmpeg" `
+          youtube_mp3_downloader.py
 
     - name: Upload EXE artifact
       uses: actions/upload-artifact@v4
